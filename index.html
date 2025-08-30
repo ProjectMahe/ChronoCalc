@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChronoCalc: Age, Date & Time Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            margin-top: 30px;
+        }
+
+        header {
+            text-align: center;
+            padding: 25px 20px;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        nav {
+            display: flex;
+            background: #f0f0f0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        nav button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: transparent;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #555;
+        }
+
+        nav button.active {
+            background: white;
+            color: #2575fc;
+            border-bottom: 3px solid #2575fc;
+        }
+
+        nav button:hover:not(.active) {
+            background: rgba(37, 117, 252, 0.1);
+        }
+
+        .calculator-section {
+            display: none;
+            padding: 30px;
+        }
+
+        .calculator-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .input-field {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: #2575fc;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(37, 117, 252, 0.2);
+        }
+
+        .calculate-btn {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 10px 0 25px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .result-container {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 5px solid #2575fc;
+        }
+
+        .result-container h3 {
+            color: #2575fc;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .result-output {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            min-height: 100px;
+        }
+
+        .unit {
+            color: #6a11cb;
+            font-weight: 600;
+        }
+
+        .value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2575fc;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: white;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            .input-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .input-field {
+                width: 100%;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                border-radius: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ChronoCalc</h1>
+            <p>Your secure age, date, and time calculator</p>
+        </header>
+        
+        <nav>
+            <button id="ageBtn" class="nav-btn active">Age Calculator</button>
+            <button id="dateBtn" class="nav-btn">Date Calculator</button>
+            <button id="timeBtn" class="nav-btn">Time Calculator</button>
+        </nav>
+        
+        <!-- Age Calculator Section -->
+        <section id="ageSection" class="calculator-section active">
+            <div class="input-group">
+                <label>Date of Birth</label>
+                <div class="input-row">
+                    <div class="input-field">
+                        <input type="number" id="birthDay" placeholder="Day" min="1" max="31">
+                    </div>
+                    <div class="input-field">
+                        <select id="birthMonth">
+                            <option value="">Month</option>
+                            <option value="0">January</option>
+                            <option value="1">February</option>
+                            <option value="2">March</option>
+                            <option value="3">April</option>
+                            <option value="4">May</option>
+                            <option value="5">June</option>
+                            <option value="6">July</option>
+                            <option value="7">August</option>
+                            <option value="8">September</option>
+                            <option value="9">October</option>
+                            <option value="10">November</option>
+                            <option value="11">December</option>
+                        </select>
+                    </div>
+                    <div class="input-field">
+                        <input type="number" id="birthYear" placeholder="Year" min="1900" max="2099">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label>Age at the Date of (or today if empty)</label>
+                <div class="input-row">
+                    <div class="input-field">
+                        <input type="number" id="ageDay" placeholder="Day" min="1" max="31">
+                    </div>
+                    <div class="input-field">
+                        <select id="ageMonth">
+                            <option value="">Month</option>
+                            <option value="0">January</option>
+                            <option value="1">February</option>
+                            <option value="2">March</option>
+                            <option value="3">April</option>
+                            <option value="4">May</option>
+                            <option value="5">June</option>
+                            <option value="6">July</option>
+                            <option value="7">August</option>
+                            <option value="8">September</option>
+                            <option value="9">October</option>
+                            <option value="10">November</option>
+                            <option value="11">December</option>
+                        </select>
+                    </div>
+                    <div class="input-field">
+                        <input type="number" id="ageYear" placeholder="Year" min="1900" max="2099">
+                    </div>
+                </div>
+            </div>
+            
+            <button class="calculate-btn" onclick="calculateAge()">Calculate Age</button>
+            
+            <div class="result-container">
+                <h3>Result of Calculation</h3>
+                <div id="ageResult" class="result-output">Your age will appear here</div>
+            </div>
+        </section>
+        
+        <!-- Date Calculator Section -->
+        <section id="dateSection" class="calculator-section">
+            <div class="input-group">
+                <label>Start Date</label>
+                <div class="input-row">
+                    <div class="input-field">
+                        <input type="number" id="startDay" placeholder="Day" min="1" max="31">
+                    </div>
+                    <div class="input-field">
+                        <select id="startMonth">
+                            <option value="">Month</option>
+                            <option value="0">January</option>
+                            <option value="1">February</option>
+                            <option value="2">March</option>
+                            <option value="3">April</option>
+                            <option value="4">May</option>
+                            <option value="5">June</option>
+                            <option value="6">July</option>
+                            <option value="7">August</option>
+                            <option value="8">September</option>
+                            <option value="9">October</option>
+                            <option value="10">November</option>
+                            <option value="11">December</option>
+                        </select>
+                    </div>
+                    <div class="input-field">
+                        <input type="number" id="startYear" placeholder="Year" min="1900" max="2099">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label>Add or Subtract Time</label>
+                <div class="input-row">
+                    <div class="input-field">
+                        <input type="number" id="addYears" placeholder="Years" min="-100" max="100">
+                    </div>
+                    <div class="input-field">
+                        <input type="number" id="addMonths" placeholder="Months" min="-12" max="12">
+                    </div>
+                    <div class="input-field">
+                        <input type="number" id="addDays" placeholder="Days" min="-31" max="31">
+                    </div>
+                </div>
+            </div>
+            
+            <button class="calculate-btn" onclick="calculateDate()">Calculate Date</button>
+            
+            <div class="result-container">
+                <h3>Resulting Date</h3>
+                <div id="dateResult" class="result-output">The resulting date will appear here</div>
+            </div>
+        </section>
+        
+        <!-- Time Calculator Section -->
+        <section id="timeSection" class="calculator-section">
+            <div class="input-group">
+                <label>Start Date & Time</label>
+                <div class="input-row">
+                    <div class="input-field">
+                        <input type="number" id="timeDay" placeholder="Day" min="1" max="31">
+                    </div>
+                    <div class="input-field">
+                        <select id="timeMonth">
+                            <option value="">Month</option>
+                            <option value="0">January</option>
+                            <option value="1">February</option>
+                            <option value="2">March</option>
+                            <option value="3">April</option>
+                            <option value="4">May</option>
+                            <option value="5">June</option>
+                            <option value="6">July</option>
+                            <option value="7">August</option>
+                            <option value="8">September</option>
+                            <option value="9">October</option>
+                            <option value="10">November</option>
+                            <option value="11">December</option>
+                        </select>
+                    </div>
+                    <div class="input-field">
+                        <input type="number" id="timeYear" placeholder="Year" min="1900" max="2099">
+                    </div>
+                </div>
+                
+                <div class="input-row" style="margin-top: 15px;">
+                    <div class="input-field">
+                        <input type="number" id="timeHour" placeholder="Hour" min="0" max="23">
+                    </div>
+                    <div class="input-field">
+                        <input type="number" id="timeMinute" placeholder="Minute" min="0" max="59">
+                    </div>
+                    <div class="input-field">
+                        <input type="number" id="timeSecond" placeholder="Second" min="0" max="59">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label>Time Difference</label>
+                <div class="input-row">
+                    <div class="input-field">
+                        <input type="number" id="diffDays" placeholder="Days" min="-365" max="365">
+                    </div>
+                    <div class="input-field">
+                        <input type="number" id="diffHours" placeholder="Hours" min="-24" max="24">
+                    </div>
+                    <div class="input-field">
+                        <input type="number" id="diffMinutes" placeholder="Minutes" min="-60" max="60">
+                    </div>
+                    <div class="input-field">
+                        <input type="number" id="diffSeconds" placeholder="Seconds" min="-60" max="60">
+                    </div>
+                </div>
+            </div>
+            
+            <button class="calculate-btn" onclick="calculateTime()">Calculate Time</button>
+            
+            <div class="result-container">
+                <h3>Resulting Time</h3>
+                <div id="timeResult" class="result-output">The resulting time will appear here</div>
+            </div>
+        </section>
+    </div>
+    
+    <footer>
+        <p>ChronoCalc &copy; 2023 | All calculations happen in your browser - no data is stored</p>
+    </footer>
+
+    <script>
+        // Tab navigation functionality
+        document.querySelectorAll('.nav-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons and sections
+                document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.calculator-section').forEach(section => section.classList.remove('active'));
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Show corresponding section
+                const sectionId = this.id.replace('Btn', 'Section');
+                document.getElementById(sectionId).classList.add('active');
+            });
+        });
+        
+        // Age calculation function
+        function calculateAge() {
+            // Get input values
+            const birthDay = parseInt(document.getElementById('birthDay').value);
+            const birthMonth = parseInt(document.getElementById('birthMonth').value);
+            const birthYear = parseInt(document.getElementById('birthYear').value);
+            
+            // Validate required inputs
+            if (isNaN(birthDay) || isNaN(birthMonth) || isNaN(birthYear)) {
+                document.getElementById('ageResult').innerHTML = 'Please enter a valid date of birth.';
+                return;
+            }
+            
+            // Get target date or use current date if not provided
+            let targetDay = parseInt(document.getElementById('ageDay').value);
+            let targetMonth = parseInt(document.getElementById('ageMonth').value);
+            let targetYear = parseInt(document.getElementById('ageYear').value);
+            
+            let targetDate;
+            if (isNaN(targetDay) || isNaN(targetMonth) || isNaN(targetYear)) {
+                targetDate = new Date(); // Use current date
+            } else {
+                targetDate = new Date(targetYear, targetMonth, targetDay);
+            }
+            
+            const birthDate = new Date(birthYear, birthMonth, birthDay);
+            
+            // Validate dates
+            if (birthDate > targetDate) {
+                document.getElementById('ageResult').innerHTML = 'Date of birth must be before the target date.';
+                return;
+            }
+            
+            // Calculate difference
+            let years = targetDate.getFullYear() - birthDate.getFullYear();
+            let months = targetDate.getMonth() - birthDate.getMonth();
+            let days = targetDate.getDate() - birthDate.getDate();
+            
+            if (days < 0) {
+                months--;
+                // Get the number of days in the previous month
+                const lastMonth = new Date(targetDate.getFullYear(), targetDate.getMonth(), 0);
+                days += lastMonth.getDate();
+            }
+            
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+            
+            // Calculate total values
+            const totalMonths = years * 12 + months;
+            const totalWeeks = Math.floor((targetDate - birthDate) / (1000 * 60 * 60 * 24 * 7));
+            const totalDays = Math.floor((targetDate - birthDate) / (1000 * 60 * 60 * 24));
+            const totalHours = Math.floor((targetDate - birthDate) / (1000 * 60 * 60));
+            const totalMinutes = Math.floor((targetDate - birthDate) / (1000 * 60));
+            const totalSeconds = Math.floor((targetDate - birthDate) / 1000);
+            
+            // Format the result
+            let resultHTML = `
+                <p><span class="unit">Age: </span><span class="value">${years}</span> years, <span class="value">${months}</span> months, <span class="value">${days}</span> days</p>
+                <p><span class="unit">or </span><span class="value">${totalMonths}</span> months, <span class="value">${days}</span> days</p>
+                <p><span class="unit">or </span><span class="value">${totalWeeks}</span> weeks, <span class="value">${totalDays % 7}</span> days</p>
+                <p><span class="unit">or </span><span class="value">${totalDays}</span> days</p>
+                <p><span class="unit">or </span><span class="value">${totalHours}</span> hours</p>
+                <p><span class="unit">or </span><span class="value">${totalMinutes}</span> minutes</p>
+                <p><span class="unit">or </span><span class="value">${totalSeconds}</span> seconds</p>
+            `;
+            
+            document.getElementById('ageResult').innerHTML = resultHTML;
+        }
+        
+        // Date calculation function
+        function calculateDate() {
+            // Get input values
+            const startDay = parseInt(document.getElementById('startDay').value);
+            const startMonth = parseInt(document.getElementById('startMonth').value);
+            const startYear = parseInt(document.getElementById('startYear').value);
+            
+            // Validate required inputs
+            if (isNaN(startDay) || isNaN(startMonth) || isNaN(startYear)) {
+                document.getElementById('dateResult').innerHTML = 'Please enter a valid start date.';
+                return;
+            }
+            
+            const addYears = parseInt(document.getElementById('addYears').value) || 0;
+            const addMonths = parseInt(document.getElementById('addMonths').value) || 0;
+            const addDays = parseInt(document.getElementById('addDays').value) || 0;
+            
+            // Create date object
+            let resultDate = new Date(startYear, startMonth, startDay);
+            
+            // Add years, months, and days
+            resultDate.setFullYear(resultDate.getFullYear() + addYears);
+            resultDate.setMonth(resultDate.getMonth() + addMonths);
+            resultDate.setDate(resultDate.getDate() + addDays);
+            
+            // Format the result
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            const formattedDate = resultDate.toLocaleDateString('en-US', options);
+            
+            let resultHTML = `
+                <p><span class="unit">Resulting Date: </span><span class="value">${formattedDate}</span></p>
+            `;
+            
+            document.getElementById('dateResult').innerHTML = resultHTML;
+        }
+        
+        // Time calculation function
+        function calculateTime() {
+            // Get input values
+            const timeDay = parseInt(document.getElementById('timeDay').value);
+            const timeMonth = parseInt(document.getElementById('timeMonth').value);
+            const timeYear = parseInt(document.getElementById('timeYear').value);
+            const timeHour = parseInt(document.getElementById('timeHour').value) || 0;
+            const timeMinute = parseInt(document.getElementById('timeMinute').value) || 0;
+            const timeSecond = parseInt(document.getElementById('timeSecond').value) || 0;
+            
+            // Validate required inputs
+            if (isNaN(timeDay) || isNaN(timeMonth) || isNaN(timeYear)) {
+                document.getElementById('timeResult').innerHTML = 'Please enter a valid start date.';
+                return;
+            }
+            
+            const diffDays = parseInt(document.getElementById('diffDays').value) || 0;
+            const diffHours = parseInt(document.getElementById('diffHours').value) || 0;
+            const diffMinutes = parseInt(document.getElementById('diffMinutes').value) || 0;
+            const diffSeconds = parseInt(document.getElementById('diffSeconds').value) || 0;
+            
+            // Create date object
+            let resultTime = new Date(timeYear, timeMonth, timeDay, timeHour, timeMinute, timeSecond);
+            
+            // Add time differences
+            resultTime.setDate(resultTime.getDate() + diffDays);
+            resultTime.setHours(resultTime.getHours() + diffHours);
+            resultTime.setMinutes(resultTime.getMinutes() + diffMinutes);
+            resultTime.setSeconds(resultTime.getSeconds() + diffSeconds);
+            
+            // Format the result
+            const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            
+            const formattedDate = resultTime.toLocaleDateString('en-US', dateOptions);
+            const formattedTime = resultTime.toLocaleTimeString('en-US', timeOptions);
+            
+            let resultHTML = `
+                <p><span class="unit">Resulting Date: </span><span class="value">${formattedDate}</span></p>
+                <p><span class="unit">Resulting Time: </span><span class="value">${formattedTime}</span></p>
+            `;
+            
+            document.getElementById('timeResult').innerHTML = resultHTML;
+        }
+        
+        // Clear all inputs when page is loaded or refreshed
+        window.onload = function() {
+            document.querySelectorAll('input').forEach(input => input.value = '');
+            document.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+        };
+    </script>
+</body>
+</html>
